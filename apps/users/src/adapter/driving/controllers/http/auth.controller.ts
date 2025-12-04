@@ -11,10 +11,17 @@ import { AuthService } from '../../../../application/services/auth.service';
 import { ApiBody } from '@nestjs/swagger';
 import { HandlerException } from '../../../../application/exceptions/handler.exception';
 import { getSystemErrorMessage } from 'util';
+import { MessagePattern } from '@nestjs/microservices';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @MessagePattern({ cmd: 'validate_session' })
+  async validateSession(data: { sessionId: string }) {
+    return this.authService.validateSession(data.sessionId);
+  }
+
   @Post('login')
   @HttpCode(200)
   @ApiBody({

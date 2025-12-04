@@ -1,9 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { UsersModule } from './users.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(UsersModule);
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.TCP,
+    options: {
+      port: 3002,
+    },
+  });
+
+  await app.startAllMicroservices();
 
   const config = new DocumentBuilder()
     .setTitle('Users API')

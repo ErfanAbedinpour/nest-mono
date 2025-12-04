@@ -15,6 +15,7 @@ import { SessionEntity } from './adapter/driven/persistence/typeorm/entities/ses
 import { AuthService } from './application/services/auth.service';
 import { AuthController } from './adapter/driving/controllers/http/auth.controller';
 import { LoginHandler } from './application/handler/login.user-handler';
+import { ValidateSessionHandler } from './application/handler/validate-session.handler';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { LoginHandler } from './application/handler/login.user-handler';
     FindOneUserHandler,
     GetAllUserHandler,
     LoginHandler,
+    ValidateSessionHandler,
   ],
 })
 export class UsersModule {}
