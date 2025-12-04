@@ -41,7 +41,4 @@ export class AuthController {
       throw new InternalServerErrorException();
     }
   }
-
-  @Post('signup')
-  createUser(@Body() body: { username: string; password: string }) {}
 }
