@@ -26,4 +26,8 @@ export class TypeOrmCommentRepository implements CommentRepository {
     });
     return entities.map(CommentMapper.toDomain);
   }
+
+  async updateAuthorUsername(userId: number, username: string): Promise<void> {
+    await this.repository.update({ userId }, { authorUsername: username });
+  }
 }

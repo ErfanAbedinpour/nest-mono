@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'comments' })
 export class CommentEntity {
@@ -10,6 +15,9 @@ export class CommentEntity {
 
   @Column()
   blogId: number;
+
+  @Column()
+  authorUsername: string;
 
   @Column()
   userId: number;

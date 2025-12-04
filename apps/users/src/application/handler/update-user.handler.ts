@@ -11,6 +11,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
   constructor(
     private readonly repository: UserRepository,
     @Inject('BLOGS_SERVICE') private readonly blogsClient: ClientProxy,
+    @Inject('COMMENTS_SERVICE') private readonly commentsClient: ClientProxy,
   ) {}
 
   async execute(command: UpdateUserCommand) {
@@ -26,6 +27,10 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
     if (command.username) {
       this.blogsClient.emit('user.updated', {
+        id: updatedUser.id,
+        username: updatedUser.username,
+      });
+      this.commentsClient.emit('user.updated', {
         id: updatedUser.id,
         username: updatedUser.username,
       });

@@ -4,12 +4,14 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { CommentsController } from './adapter/driving/controllers/http/comments.controller';
+import { CommentsEventController } from './adapter/driving/controllers/event/comments-event.controller';
 import { CommentsService } from './application/services/comments.service';
 import { CommentRepository } from './ports/repository.port';
 import { TypeOrmCommentRepository } from './adapter/driven/persistence/typeorm/repository/typeorm.comment.repository';
 import { CommentEntity } from './adapter/driven/persistence/typeorm/entities/comment.entity';
 import { CreateCommentHandler } from './application/handler/create-comment.handler';
 import { FindCommentsByBlogIdHandler } from './application/handler/find-comments-by-blog-id.handler';
+import { UpdateCommentAuthorHandler } from './application/handler/update-comment-author.handler';
 import { SessionGuard } from './adapter/driving/guards/session.guard';
 
 @Module({
@@ -44,7 +46,7 @@ import { SessionGuard } from './adapter/driving/guards/session.guard';
       },
     ]),
   ],
-  controllers: [CommentsController],
+  controllers: [CommentsController, CommentsEventController],
   providers: [
     CommentsService,
     {
@@ -53,6 +55,7 @@ import { SessionGuard } from './adapter/driving/guards/session.guard';
     },
     CreateCommentHandler,
     FindCommentsByBlogIdHandler,
+    UpdateCommentAuthorHandler,
     SessionGuard,
   ],
 })

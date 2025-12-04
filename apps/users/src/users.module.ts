@@ -43,6 +43,15 @@ import { UpdateUserHandler } from './application/handler/update-user.handler';
         },
       },
     ]),
+    ClientsModule.register([
+      {
+        name: 'COMMENTS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          port: 3004,
+        },
+      },
+    ]),
   ],
   controllers: [UsersController, AuthController],
   providers: [
