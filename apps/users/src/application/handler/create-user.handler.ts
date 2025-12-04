@@ -16,8 +16,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
         throw new HandlerException('User already exists');
       }
 
-      await this.repository.create({ password, username });
-      return;
+      return this.repository.create({ password, username });
     } catch (err) {
       if (err instanceof HandlerException) {
         throw err;

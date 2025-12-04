@@ -11,9 +11,12 @@ import { HandlerException } from '../exceptions/handler.exception';
 export class UsersService {
   constructor(private readonly commandBus: CommandBus) {}
 
-  async create(username: string, password: string): Promise<void> {
+  async create(username: string, password: string) {
     try {
-      return this.commandBus.execute(new CreateUserCommand(username, password));
+      const res = await this.commandBus.execute(
+        new CreateUserCommand(username, password),
+      );
+      return res;
     } catch (err) {
       if (err instanceof HandlerException) {
         throw new BadRequestException(err.message);
