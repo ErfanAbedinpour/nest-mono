@@ -4,8 +4,8 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { CreateCommentCommand } from '../command/create-comment.command';
 import { FindCommentsByBlogIdQuery } from '../query/find-comments-by-blog-id.query';
-import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
-import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
+import { AppException } from '@app/_shared/error/app.exception';
+import { ErrorCode } from '@app/_shared/error/error-codes';
 
 @Injectable()
 export class CommentsService {

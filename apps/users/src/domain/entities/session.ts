@@ -1,4 +1,4 @@
-import { Entity } from '../../../../../libs/_shared/src/global/entity';
+import { Entity } from '@app/_shared/global/entity';
 import { randomUUID } from 'crypto';
 
 export class Session extends Entity {

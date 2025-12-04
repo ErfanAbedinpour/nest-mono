@@ -2,8 +2,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LoginCommand } from '../command/login.user.command';
 import { SessionRepository, UserRepository } from '../../ports/repository.port';
 import { Session } from '../../domain/entities/session';
-import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
-import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
+import { ErrorCode } from '@app/_shared/error/error-codes';
+import { AppException } from '@app/_shared/error/app.exception';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {

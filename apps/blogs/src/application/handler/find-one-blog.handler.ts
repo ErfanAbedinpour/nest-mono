@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindOneBlogQuery } from '../query/find-one-blog.query';
 import { BlogRepository } from '../../ports/repository.port';
-import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
-import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
+import { AppException } from '@app/_shared/error/app.exception';
+import { ErrorCode } from '@app/_shared/error/error-codes';
 
 @QueryHandler(FindOneBlogQuery)
 export class FindOneBlogHandler implements IQueryHandler<FindOneBlogQuery> {

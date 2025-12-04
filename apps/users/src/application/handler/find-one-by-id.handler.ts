@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindOneByIdQuery } from '../query/findOne-by-id.query';
 import { UserRepository } from '../../ports/repository.port';
-import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
-import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
+import { ErrorCode } from '@app/_shared/error/error-codes';
+import { AppException } from '@app/_shared/error/app.exception';
 
 @QueryHandler(FindOneByIdQuery)
 export class FindOneUserHandler implements IQueryHandler<FindOneByIdQuery> {

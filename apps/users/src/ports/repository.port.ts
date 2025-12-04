@@ -1,5 +1,5 @@
 import { PartialType, PickType } from '@nestjs/swagger';
-import { Repository } from '../../../../libs/_shared/src/ports/repository.port';
+import { Repository } from '@app/_shared/ports/repository.port';
 import { Session } from '../domain/entities/session';
 import { User } from '../domain/entities/user';
 
