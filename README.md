@@ -1,116 +1,134 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS Monorepo Microservices Project
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a scalable, event-driven microservices application built with [NestJS](https://nestjs.com/) in a Monorepo structure. It utilizes **Hexagonal Architecture (Ports and Adapters)** and **CQRS (Command Query Responsibility Segregation)** to ensure modularity, testability, and maintainability.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🏗 Project Structure
 
-## Description
+The project is organized as a Monorepo, containing multiple applications and shared libraries.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```
+├── apps/
+│   ├── gateway/    # API Gateway (HTTP Entry Point)
+│   ├── users/      # Users Microservice (TCP)
+│   ├── blogs/      # Blogs Microservice (TCP)
+│   └── comments/   # Comments Microservice (TCP)
+├── libs/
+│   └── _shared/    # Shared code (DTOs, Interfaces, Constants, Exceptions)
+├── nest-cli.json   # Monorepo Configuration
+└── package.json    # Dependencies and Scripts
 ```
 
-## Compile and run the project
+### Applications
 
-```bash
-# development
-$ pnpm run start
+- **Gateway**: The public-facing HTTP server. It acts as a reverse proxy, routing requests to the appropriate internal microservices via TCP. It handles authentication and request aggregation.
+- **Users**: Manages user identities, profiles, and authentication. It is the source of truth for user data.
+- **Blogs**: Manages blog posts. It maintains a local cache of author details to optimize read performance.
+- **Comments**: Manages comments on blog posts. It also maintains a local cache of author details.
 
-# watch mode
-$ pnpm run start:dev
+### Shared Library (`libs/_shared`)
 
-# production mode
-$ pnpm run start:prod
+Contains code shared across all microservices to ensure consistency and reduce duplication:
+
+- **Global Exceptions**: Standardized error handling.
+- **DTOs**: Data Transfer Objects shared between services.
+- **Constants**: Shared configuration values.
+
+---
+
+## 🏛 Architecture: Hexagonal & CQRS
+
+This project moves away from the traditional "3-Layer Architecture" (Controller -> Service -> Repository) in favor of **Hexagonal Architecture** (also known as Ports and Adapters) combined with **CQRS**.
+
+### Internal Application Structure
+
+Each microservice follows this directory structure:
+
+```
+src/
+├── adapter/            # Interface Adapters (Entry/Exit points)
+│   ├── driving/        # Primary Adapters (Controllers, Resolvers, Event Listeners)
+│   └── driven/         # Secondary Adapters (Repositories, External APIs)
+├── application/        # Application Business Rules (Use Cases)
+│   ├── command/        # Write operations (Commands & Handlers)
+│   ├── query/          # Read operations (Queries & Handlers)
+│   └── services/       # Domain Services
+├── domain/             # Enterprise Business Rules (Entities, Value Objects)
+└── ports/              # Interfaces defining contracts for Adapters
 ```
 
-## Run tests
+### Hexagonal vs. 3-Layer Architecture
 
-```bash
-# unit tests
-$ pnpm run test
+| Feature                  | Traditional 3-Layer Architecture                               | Hexagonal Architecture (This Project)                                                         |
+| :----------------------- | :------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| **Dependency Direction** | Top-down (Controller → Service → Repository → DB)              | **Inward** (Adapters → Application → Domain). The Domain depends on nothing.                  |
+| **Coupling**             | High. Business logic often coupled to DB or Framework.         | **Low**. Business logic is isolated from external concerns (DB, HTTP, Framework).             |
+| **Testing**              | Harder to test business logic in isolation without mocking DB. | **Easy**. Domain logic is pure TypeScript. Adapters can be easily swapped or mocked.          |
+| **Flexibility**          | Hard to switch DB or Transport layer.                          | **High**. You can swap TypeORM for Mongoose or HTTP for gRPC without touching business logic. |
+| **Scalability**          | Logic often mixed (Reads/Writes).                              | **CQRS** separates Reads (Queries) from Writes (Commands), allowing independent scaling.      |
 
-# e2e tests
-$ pnpm run test:e2e
+### Benefits of this Approach
 
-# test coverage
-$ pnpm run test:cov
-```
+1.  **Independence of Frameworks**: The architecture does not depend on the existence of some library of feature laden software. This allows you to use such frameworks as tools.
+2.  **Testability**: The business rules can be tested without the UI, Database, Web Server, or any other external element.
+3.  **Independence of UI**: The UI can change easily, without changing the rest of the system. A Web UI could be replaced with a console UI, for example.
+4.  **Independence of Database**: You can swap out Oracle or SQL Server, for Mongo, BigTable, CouchDB, or something else. Your business rules are not bound to the database.
+5.  **Event-Driven Consistency**: Services communicate via events (e.g., `user.updated`). When a user updates their profile, the `Users` service emits an event, and `Blogs` and `Comments` services update their local data asynchronously. This ensures **Eventual Consistency** and high read performance (no cross-service synchronous calls for reads).
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🚀 Getting Started
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Prerequisites
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+- Node.js (v16 or later)
+- pnpm (or npm/yarn)
+- Git
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Installation
 
-## Resources
+1.  Clone the repository:
 
-Check out a few resources that may come in handy when working with NestJS:
+    ```bash
+    git clone <repository-url>
+    cd nest-mono
+    ```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
 
-## Support
+### Running the Applications
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Since this is a monorepo with microservices, you need to run each application. You can run them in separate terminal windows.
 
-## Stay in touch
+1.  **Start the Microservices** (Order doesn't strictly matter, but good to have them up before Gateway):
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+    ```bash
+    # Terminal 1: Users Service
+    npm run start users --watch
 
-## License
+    # Terminal 2: Blogs Service
+    npm run start blogs --watch
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+    # Terminal 3: Comments Service
+    npm run start comments --watch
+    ```
 
-## Entities
+2.  **Start the Gateway**:
 
-### Blogs ( title, images , body , author(ref Users))
+    ```bash
+    # Terminal 4: API Gateway
+    npm run start gateway --watch
+    ```
 
-- title: String
-- images : String[]
-- body: Text
-- author: Ref Users
+The Gateway will typically run on port `3000` (HTTP), while microservices listen on TCP ports (e.g., `3001`, `3002`, `3003`).
 
-### Comment (title, author, parentId(ref Comment))
-- Title
-- author (ref Users)
-- parentId(ref Comment)
+## 🛠 Technologies Used
 
-## Users (username(unique),password)
-- username: String
-- password: String
+- **Framework**: [NestJS](https://nestjs.com/)
+- **Language**: TypeScript
+- **Database**: TypeORM (with SQLite/Better-SQLite3 for dev)
+- **Transport**: TCP (Microservices)
+- **Architecture**: Hexagonal, CQRS, Event-Driven
+- **Documentation**: Swagger (OpenAPI) - typically available at `/api` on the Gateway.
