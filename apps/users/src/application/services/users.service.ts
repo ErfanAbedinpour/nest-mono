@@ -1,11 +1,6 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../command/create-user.command';
-import { HandlerException } from '../exceptions/handler.exception';
 import { FindAllQuery } from '../query/findAll.query';
 import { FindOneByIdQuery } from '../query/findOne-by-id.query';
 
@@ -17,17 +12,9 @@ export class UsersService {
   ) {}
 
   async create(username: string, password: string) {
-    try {
-      const res = await this.commandBus.execute(
-        new CreateUserCommand(username, password),
-      );
-      return res;
-    } catch (err) {
-      if (err instanceof HandlerException) {
-        throw new BadRequestException(err.message);
-      }
-      throw new InternalServerErrorException(`Failed to create user`);
-    }
+    return this.commandBus.execute(
+      new CreateUserCommand(username, password),
+    );
   }
 
   async findAll() {

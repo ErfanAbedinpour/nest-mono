@@ -1,7 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../command/create-user.command';
 import { UserRepository } from '../../ports/repository.port';
-import { HandlerException } from '../exceptions/handler.exception';
+import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
+import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
@@ -13,15 +14,15 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
       const user = await this.repository.findOneByUsername(username);
 
       if (user) {
-        throw new HandlerException('User already exists');
+        throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
       }
 
       return this.repository.create({ password, username });
     } catch (err) {
-      if (err instanceof HandlerException) {
+      if (err instanceof AppException) {
         throw err;
       }
-      throw new HandlerException('Failed to create user');
+      throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
 }

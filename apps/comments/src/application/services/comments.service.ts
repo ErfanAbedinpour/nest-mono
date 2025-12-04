@@ -1,9 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { CreateCommentCommand } from '../command/create-comment.command';
 import { FindCommentsByBlogIdQuery } from '../query/find-comments-by-blog-id.query';
+import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
+import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
 
 @Injectable()
 export class CommentsService {
@@ -20,12 +22,10 @@ export class CommentsService {
         this.blogsClient.send({ cmd: 'get_blog' }, { id: blogId }),
       );
       if (!blog) {
-        throw new NotFoundException(`Blog with id ${blogId} not found`);
+        throw new AppException(ErrorCode.BLOG_NOT_FOUND);
       }
     } catch (error) {
-      throw new NotFoundException(
-        `Blog with id ${blogId} not found or service unavailable`,
-      );
+      throw new AppException(ErrorCode.BLOG_NOT_FOUND);
     }
 
     return this.commandBus.execute(

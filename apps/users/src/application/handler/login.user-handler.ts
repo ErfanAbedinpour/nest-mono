@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LoginCommand } from '../command/login.user.command';
 import { SessionRepository, UserRepository } from '../../ports/repository.port';
-import { CreateUserCommand } from '../command/create-user.command';
-import { HandlerException } from '../exceptions/handler.exception';
 import { Session } from '../../domain/entities/session';
+import { ErrorCode } from '../../../../../libs/_shared/src/error/error-codes';
+import { AppException } from '../../../../../libs/_shared/src/error/app.exception';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
@@ -19,7 +19,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
     console.log({ user });
 
     if (!user || user.password !== password) {
-      throw new HandlerException('Invalid username or password');
+      throw new AppException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     try {
@@ -32,7 +32,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       return { token: token.sessionId };
     } catch (err) {
       console.error(err);
-      throw new HandlerException('Failed to create session');
+      throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
 }
