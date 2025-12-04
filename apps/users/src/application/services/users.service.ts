@@ -12,9 +12,7 @@ export class UsersService {
   ) {}
 
   async create(username: string, password: string) {
-    return this.commandBus.execute(
-      new CreateUserCommand(username, password),
-    );
+    return this.commandBus.execute(new CreateUserCommand(username, password));
   }
 
   async findAll() {
