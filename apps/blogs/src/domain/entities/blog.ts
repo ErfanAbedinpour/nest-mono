@@ -10,6 +10,7 @@ export class Blog {
     public description: string,
     public content: string,
     public userId: number,
+    public readonly authorName: string,
     public createdAt: Date,
     public status: BlogStatus,
   ) {}

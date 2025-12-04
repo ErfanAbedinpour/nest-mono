@@ -20,4 +20,9 @@ export class UsersController {
   async findOne(data: { id: string }) {
     return this.usersService.findOne(data.id);
   }
+
+  @MessagePattern({ cmd: 'update_user' })
+  async update(data: { id: number; username?: string; password?: string }) {
+    return this.usersService.update(data.id, data.username, data.password);
+  }
 }

@@ -9,6 +9,7 @@ export class BlogMapper {
       entity.description,
       entity.content,
       entity.userId,
+      entity.authorName,
       entity.createdAt,
       entity.status,
     );
@@ -20,6 +21,7 @@ export class BlogMapper {
     entity.description = domain.description;
     entity.content = domain.content;
     entity.userId = domain.userId;
+    entity.authorName = domain.authorName;
     entity.status = domain.status;
     return entity;
   }

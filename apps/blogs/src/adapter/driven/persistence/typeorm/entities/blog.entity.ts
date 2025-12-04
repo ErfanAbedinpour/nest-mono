@@ -23,6 +23,9 @@ export class BlogEntity {
   @Column()
   userId: number;
 
+  @Column()
+  authorName: string;
+
   @Column({
     type: 'simple-enum',
     enum: BlogStatus,

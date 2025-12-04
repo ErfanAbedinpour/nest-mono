@@ -32,4 +32,8 @@ export class TypeOrmBlogRepository implements BlogRepository {
     const entity = await this.repository.findOne({ where: { id } });
     return entity ? BlogMapper.toDomain(entity) : null;
   }
+
+  async updateAuthorName(userId: number, authorName: string): Promise<void> {
+    await this.repository.update({ userId }, { authorName });
+  }
 }

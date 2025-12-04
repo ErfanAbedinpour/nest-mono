@@ -12,6 +12,8 @@ import { FindAllBlogsHandler } from './application/handler/find-all-blogs.handle
 import { FindOneBlogHandler } from './application/handler/find-one-blog.handler';
 import { SessionGuard } from './adapter/driving/guards/session.guard';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { BlogsEventController } from './adapter/driving/controllers/event/blogs-event.controller';
+import { UpdateBlogAuthorHandler } from './application/handler/update-blog-author.handler';
 
 @Module({
   imports: [
@@ -38,7 +40,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       },
     ]),
   ],
-  controllers: [BlogsController],
+  controllers: [BlogsController, BlogsEventController],
   providers: [
     BlogsService,
     {
@@ -48,6 +50,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     CreateBlogHandler,
     FindAllBlogsHandler,
     FindOneBlogHandler,
+    UpdateBlogAuthorHandler,
     SessionGuard,
   ],
 })

@@ -16,6 +16,8 @@ import { AuthService } from './application/services/auth.service';
 import { AuthController } from './adapter/driving/controllers/http/auth.controller';
 import { LoginHandler } from './application/handler/login.user-handler';
 import { ValidateSessionHandler } from './application/handler/validate-session.handler';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { UpdateUserHandler } from './application/handler/update-user.handler';
 
 @Module({
   imports: [
@@ -32,6 +34,15 @@ import { ValidateSessionHandler } from './application/handler/validate-session.h
     }),
     TypeOrmModule.forFeature([UserEntity, SessionEntity]),
     CqrsModule.forRoot({}),
+    ClientsModule.register([
+      {
+        name: 'BLOGS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          port: 3003,
+        },
+      },
+    ]),
   ],
   controllers: [UsersController, AuthController],
   providers: [
@@ -50,6 +61,7 @@ import { ValidateSessionHandler } from './application/handler/validate-session.h
     GetAllUserHandler,
     LoginHandler,
     ValidateSessionHandler,
+    UpdateUserHandler,
   ],
 })
 export class UsersModule {}

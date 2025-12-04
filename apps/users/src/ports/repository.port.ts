@@ -7,6 +7,7 @@ export abstract class UserRepository extends Repository<User> {
   // abstract findOneById(id: number): Promise<User | null>;
   abstract create(user: Omit<User, 'id'>): Promise<User>;
   abstract findOneByUsername(username: string): Promise<User | null>;
+  abstract update(id: number, user: Partial<User>): Promise<User>;
   // abstract findAll(): Promise<User[]>;
 }
 

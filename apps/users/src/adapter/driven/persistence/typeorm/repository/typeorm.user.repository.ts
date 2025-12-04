@@ -38,4 +38,15 @@ export class TypeOrmUserRepository implements UserRepository {
     });
     return userEntity && UserMapper.toDomain(userEntity);
   }
+
+  async update(id: number, user: Partial<User>): Promise<User> {
+    await this.userRepository.update(
+      { id },
+      {
+        ...(user.username && { username: user.username }),
+      },
+    );
+    const updatedUser = await this.userRepository.findOne({ where: { id } });
+    return UserMapper.toDomain(updatedUser!);
+  }
 }
