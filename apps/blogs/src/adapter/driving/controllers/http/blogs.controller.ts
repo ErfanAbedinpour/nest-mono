@@ -1,22 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Query,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { BlogsService } from '../../../../application/services/blogs.service';
-import { SessionGuard } from '../../guards/session.guard';
 import { BlogStatus } from '../../../../domain/entities/blog';
-import { ApiBearerAuth, ApiTags, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { MessagePattern } from '@nestjs/microservices';
 
-@ApiTags('blogs')
-@Controller('blogs')
+@Controller()
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService) {}
 
@@ -25,47 +12,30 @@ export class BlogsController {
     return this.blogsService.findOne(data.id);
   }
 
-  @Post()
-  @UseGuards(SessionGuard)
-  @ApiBearerAuth()
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        description: { type: 'string' },
-        content: { type: 'string' },
-        status: { type: 'string', enum: ['DRAFT', 'PUBLISHED'] },
-      },
-    },
-  })
-  async create(@Body() body: any, @Request() req: any) {
-    const userId = req.user.id;
+  @MessagePattern({ cmd: 'create_blog' })
+  async create(data: {
+    title: string;
+    description: string;
+    content: string;
+    status: string;
+    userId: number;
+  }) {
     return this.blogsService.create(
-      body.title,
-      body.description,
-      body.content,
-      userId,
-      body.status as BlogStatus,
+      data.title,
+      data.description,
+      data.content,
+      data.userId,
+      data.status as BlogStatus,
     );
   }
 
-  @Get()
-  @ApiQuery({ name: 'skip', required: false, type: Number })
-  @ApiQuery({ name: 'take', required: false, type: Number })
-  async findAll(
-    @Query('skip') skip: number = 0,
-    @Query('take') take: number = 10,
-  ) {
-    return this.blogsService.findAll(skip, take);
+  @MessagePattern({ cmd: 'find_all_blogs' })
+  async findAll(data: { skip: number; take: number }) {
+    return this.blogsService.findAll(data.skip, data.take);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const blog = await this.blogsService.findOne(+id);
-    if (!blog) {
-      throw new NotFoundException(`Blog with id ${id} not found`);
-    }
-    return blog;
+  @MessagePattern({ cmd: 'find_one_blog' })
+  async findOne(data: { id: string }) {
+    return this.blogsService.findOne(+data.id);
   }
 }

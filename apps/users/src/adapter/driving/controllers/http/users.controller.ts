@@ -1,49 +1,23 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { UsersService } from '../../../../application/services/users.service';
-import { ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger';
-import { User } from '../../../../domain/entities/user';
+import { MessagePattern } from '@nestjs/microservices';
 
-@Controller('users')
+@Controller()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-      },
-    },
-  })
-  async create(@Body() body: { username: string; password: string }) {
-    if (!body.username || !body.password)
-      throw new BadRequestException('Username and password is required');
-
-    return this.usersService.create(body.username, body.password);
+  @MessagePattern({ cmd: 'create_user' })
+  async create(data: { username: string; password: string }) {
+    return this.usersService.create(data.username, data.password);
   }
 
-  @Get()
-  @ApiOkResponse({ type: [User] })
+  @MessagePattern({ cmd: 'find_all_users' })
   async findAll() {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  @ApiParam({ name: 'id', type: 'string' })
-  @ApiOkResponse({ type: User })
-  async findOne(@Param('id') id: string) {
-    const res = await this.usersService.findOne(id);
-    if (!res) throw new NotFoundException(`User with id ${id} not found`);
-    return res;
+  @MessagePattern({ cmd: 'find_one_user' })
+  async findOne(data: { id: string }) {
+    return this.usersService.findOne(data.id);
   }
 }

@@ -1,42 +1,18 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { CommentsService } from '../../../../application/services/comments.service';
-import { SessionGuard } from '../../guards/session.guard';
-import { ApiBearerAuth, ApiTags, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { MessagePattern } from '@nestjs/microservices';
 
-@ApiTags('comments')
-@Controller('comments')
+@Controller()
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Post()
-  @UseGuards(SessionGuard)
-  @ApiBearerAuth()
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        content: { type: 'string' },
-        blogId: { type: 'number' },
-      },
-    },
-  })
-  async create(@Body() body: any, @Request() req: any) {
-    const userId = req.user.id;
-    return this.commentsService.create(body.content, body.blogId, userId);
+  @MessagePattern({ cmd: 'create_comment' })
+  async create(data: { content: string; blogId: number; userId: number }) {
+    return this.commentsService.create(data.content, data.blogId, data.userId);
   }
 
-  @Get()
-  @ApiQuery({ name: 'blogId', required: true, type: Number })
-  async findByBlogId(@Query('blogId') blogId: number) {
-    return this.commentsService.findByBlogId(blogId);
+  @MessagePattern({ cmd: 'find_comments_by_blog_id' })
+  async findByBlogId(data: { blogId: number }) {
+    return this.commentsService.findByBlogId(data.blogId);
   }
 }
