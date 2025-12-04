@@ -4,7 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BlogStatus } from '../../../../../domain/entities/blog';
+import { BlogStatus } from '../../../../../domain';
 
 @Entity({ name: 'blogs' })
 export class BlogEntity {
