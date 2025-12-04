@@ -8,6 +8,8 @@ import { UsersService } from './application/services/users.service';
 import { UserRepository } from './ports/repository.port';
 import { TypeOrmRepository } from './adapter/driven/persistence/typeorm/repository/typeorm.repository';
 import { CreateUserHandler } from './application/handler/create-user.handler';
+import { FindOneUserHandler } from './application/handler/find-one-by-id.handler';
+import { GetAllUserHandler } from './application/handler/findAll.handler';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { CreateUserHandler } from './application/handler/create-user.handler';
       useClass: TypeOrmRepository,
     },
     CreateUserHandler,
+    FindOneUserHandler,
+    GetAllUserHandler,
   ],
 })
 export class UsersModule {}
