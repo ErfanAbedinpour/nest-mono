@@ -10,13 +10,4 @@ export class UserMapper {
     userDomain.createdAt = user.createdAt;
     return userDomain;
   }
-
-  static toEntity(user: User): UserEntity {
-    const userEntity = new UserEntity();
-    userEntity.id = Number(user.id);
-    userEntity.username = user.username;
-    userEntity.password = user.password;
-    userEntity.createdAt = user.createdAt;
-    return userEntity;
-  }
 }

@@ -2,8 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { SessionEntity } from './session.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -18,4 +20,7 @@ export class UserEntity {
 
   @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt?: Date;
+
+  @OneToMany(() => SessionEntity, (session) => session.user)
+  sessions: SessionEntity[];
 }

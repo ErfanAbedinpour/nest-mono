@@ -4,10 +4,10 @@ import { UserEntity } from '../entities/user.entity';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../../../../domain/entities/user';
-import { UserMapper } from '../mapper/toUser.mapper';
+import { UserMapper } from '../mapper/user.mapper';
 
 @Injectable()
-export class TypeOrmRepository implements UserRepository {
+export class TypeOrmUserRepository implements UserRepository {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
