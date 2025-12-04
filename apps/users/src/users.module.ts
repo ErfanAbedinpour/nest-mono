@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { UsersService } from './application/users.service';
-import { UsersController } from './infra/controllers/users.controller';
+import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './infra/persistence/typeorm/user.entity';
+import { UserEntity } from './adapter/driven/persistence/typeorm/entities/user.entity';
+import { UsersController } from './adapter/driving/controllers/http/users.controller';
+import { UsersService } from './application/services/users.service';
+import { UserRepository } from './ports/repository.port';
+import { TypeOrmRepository } from './adapter/driven/persistence/typeorm/repository/typeorm.repository';
+import { CreateUserHandler } from './application/handler/create-user.handler';
 
 @Module({
   imports: [
@@ -12,19 +16,23 @@ import { UserEntity } from './infra/persistence/typeorm/user.entity';
       envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'users-postgres',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USERNAME || 'nest_user',
-      password: process.env.DB_PASSWORD || 'nest_password',
-      database: process.env.DB_DATABASE || 'nest_users',
+      type: 'better-sqlite3',
+      database: `:memory:`,
       entities: [UserEntity],
       synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV === 'development',
     }),
     TypeOrmModule.forFeature([UserEntity]),
+    CqrsModule.forRoot({}),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [
+    UsersService,
+    {
+      provide: UserRepository,
+      useClass: TypeOrmRepository,
+    },
+    CreateUserHandler,
+  ],
 })
 export class UsersModule {}
