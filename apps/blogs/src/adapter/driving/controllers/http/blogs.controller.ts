@@ -13,11 +13,17 @@ import { BlogsService } from '../../../../application/services/blogs.service';
 import { SessionGuard } from '../../guards/session.guard';
 import { BlogStatus } from '../../../../domain/entities/blog';
 import { ApiBearerAuth, ApiTags, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { MessagePattern } from '@nestjs/microservices';
 
 @ApiTags('blogs')
 @Controller('blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService) {}
+
+  @MessagePattern({ cmd: 'get_blog' })
+  async getBlog(data: { id: number }) {
+    return this.blogsService.findOne(data.id);
+  }
 
   @Post()
   @UseGuards(SessionGuard)
