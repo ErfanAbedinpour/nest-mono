@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BlogEntity } from '../entities/blog.entity';
 import { BlogMapper } from '../mapper/blog.mapper';
-import { BlogRepository } from '../../../../../ports/repository.port';
+import { BlogRepository, CreateBlogData } from '../../../../../ports/repository.port';
 import { Blog } from '../../../../../domain/entities/blog';
 import { BlogUserCacheEntity } from '../entities/blog-user-cache.entity';
 
@@ -16,7 +16,9 @@ export class TypeOrmBlogRepository implements BlogRepository {
     private readonly userCacheRepository: Repository<BlogUserCacheEntity>,
   ) {}
 
-  async create(blog: Omit<Blog, 'id' | 'createdAt'>): Promise<Blog> {
+  async create(blogData: CreateBlogData): Promise<Blog> {
+    // Use the domain entity factory method which includes validation
+    const blog = Blog.create(blogData);
     const entity = BlogMapper.toEntity(blog);
     const saved = await this.repository.save(entity);
     return BlogMapper.toDomain(saved);

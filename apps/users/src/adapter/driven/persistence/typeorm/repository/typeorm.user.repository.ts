@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../../../../ports/repository.port';
+import { UserRepository, CreateUserData } from '../../../../../ports/repository.port';
 import { UserEntity } from '../entities/user.entity';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -27,11 +27,17 @@ export class TypeOrmUserRepository implements UserRepository {
     return userEntity && UserMapper.toDomain(userEntity);
   }
 
-  async create(user: Omit<User, 'id'>): Promise<User> {
-    const userEntity = this.userRepository.create(user);
+  async create(userData: CreateUserData): Promise<User> {
+    // Use the domain entity factory method which includes validation
+    const user = User.create(userData);
+    const userEntity = this.userRepository.create({
+      password:user.password,
+      username:user.username,
+    });
     await this.userRepository.save(userEntity);
     return UserMapper.toDomain(userEntity);
   }
+
   async findOneByUsername(username: string): Promise<User | null> {
     const userEntity = await this.userRepository.findOne({
       where: { username },

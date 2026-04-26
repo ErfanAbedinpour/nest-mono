@@ -3,7 +3,7 @@ import { UserEntity } from '../entities/user.entity';
 
 export class UserMapper {
   static toDomain(user: UserEntity): User {
-    const userDomain = new User();
+    const userDomain = new User(user.username,user.password);
     userDomain.id = user.id.toString();
     userDomain.username = user.username;
     userDomain.password = user.password;

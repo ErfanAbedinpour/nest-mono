@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommentEntity } from '../entities/comment.entity';
 import { CommentMapper } from '../mapper/comment.mapper';
-import { CommentRepository } from '../../../../../ports/repository.port';
+import { CommentRepository, CreateCommentData } from '../../../../../ports/repository.port';
 import { Comment } from '../../../../../domain/entities/comment';
 import { CommentUserCacheEntity } from '../entities/comment-user-cache.entity';
 
@@ -16,7 +16,9 @@ export class TypeOrmCommentRepository implements CommentRepository {
     private readonly userCacheRepository: Repository<CommentUserCacheEntity>,
   ) {}
 
-  async create(comment: Omit<Comment, 'id' | 'createdAt'>): Promise<Comment> {
+  async create(commentData: CreateCommentData): Promise<Comment> {
+    // Use the domain entity factory method which includes validation
+    const comment = Comment.create(commentData);
     const entity = CommentMapper.toEntity(comment);
     const saved = await this.repository.save(entity);
     return CommentMapper.toDomain(saved);

@@ -1,11 +1,15 @@
-import { PartialType, PickType } from '@nestjs/swagger';
 import { Repository } from '@app/_shared/ports/repository.port';
 import { Session } from '../domain/entities/session';
 import { User } from '../domain/entities/user';
 
+export interface CreateUserData {
+  username: string;
+  password: string;
+}
+
 export abstract class UserRepository extends Repository<User> {
   // abstract findOneById(id: number): Promise<User | null>;
-  abstract create(user: Omit<User, 'id'>): Promise<User>;
+  abstract create(userData: CreateUserData): Promise<User>;
   abstract findOneByUsername(username: string): Promise<User | null>;
   abstract update(id: number, user: Partial<User>): Promise<User>;
   // abstract findAll(): Promise<User[]>;

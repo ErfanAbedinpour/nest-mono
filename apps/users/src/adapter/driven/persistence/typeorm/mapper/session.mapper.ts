@@ -4,13 +4,13 @@ import { UserEntity } from '../entities/user.entity';
 
 export class SessionMapper {
   static toDomain(session: SessionEntity): Session {
-    const sessionDomain = new Session();
-    sessionDomain.id = session.id.toString();
-    sessionDomain.sessionId = session.sessionId;
-    sessionDomain.userId = session.user?.id.toString();
-    sessionDomain.metadata = session.metadata;
-    sessionDomain.expiredAt = session.expiredAt;
-    return sessionDomain;
+    const sessionDomain = new Session(
+      session.sessionId,
+      session.user?.id.toString() || '',
+      session.metadata,
+      session.expiredAt
+    );
+        return sessionDomain;
   }
 
   static toEntity(session: Session, user: UserEntity): SessionEntity {
