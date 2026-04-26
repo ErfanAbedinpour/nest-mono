@@ -18,6 +18,8 @@ import { LoginHandler } from './application/handler/login.user-handler';
 import { ValidateSessionHandler } from './application/handler/validate-session.handler';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UpdateUserHandler } from './application/handler/update-user.handler';
+import { PasswordHasher } from './ports/password-hasher.port';
+import { CryptoPasswordHasher } from './adapter/driven/services/crypto-password-hasher.service';
 
 @Module({
   imports: [
@@ -57,6 +59,10 @@ import { UpdateUserHandler } from './application/handler/update-user.handler';
   providers: [
     UsersService,
     AuthService,
+    {
+      provide: PasswordHasher,
+      useClass: CryptoPasswordHasher,
+    },
     {
       provide: UserRepository,
       useClass: TypeOrmUserRepository,
