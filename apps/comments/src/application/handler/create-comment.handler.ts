@@ -1,42 +1,26 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
 import { CreateCommentCommand } from '../command/create-comment.command';
 import { CommentRepository } from '../../ports/repository.port';
+import { AppException } from '@app/_shared/error/app.exception';
+import { ErrorCode } from '@app/_shared/error/error-codes';
 
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentHandler
   implements ICommandHandler<CreateCommentCommand>
 {
-  constructor(
-    private readonly repository: CommentRepository,
-    @Inject('USERS_SERVICE') private readonly usersClient: ClientProxy,
-  ) {}
+  constructor(private readonly repository: CommentRepository) {}
 
   async execute(command: CreateCommentCommand) {
-    console.log('i ma here');
-    let user;
-    try {
-      user = await firstValueFrom(
-        this.usersClient.send(
-          { cmd: 'find_one_user' },
-          { id: +command.userId },
-        ),
-      );
-    } catch (error) {
-      console.error(error);
-      throw new Error('User not found');
+    const cachedUser = await this.repository.findCachedUser(command.userId);
+    if (!cachedUser) {
+      throw new AppException(ErrorCode.USER_NOT_FOUND);
     }
-
-    console.log({ user });
-    console.log({ userId: command.userId });
 
     return this.repository.create({
       content: command.content,
       blogId: command.blogId,
       userId: command.userId,
-      authorUsername: user.username,
+      authorUsername: cachedUser.username,
     });
   }
 }

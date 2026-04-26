@@ -9,9 +9,11 @@ import { CommentsService } from './application/services/comments.service';
 import { CommentRepository } from './ports/repository.port';
 import { TypeOrmCommentRepository } from './adapter/driven/persistence/typeorm/repository/typeorm.comment.repository';
 import { CommentEntity } from './adapter/driven/persistence/typeorm/entities/comment.entity';
+import { CommentUserCacheEntity } from './adapter/driven/persistence/typeorm/entities/comment-user-cache.entity';
 import { CreateCommentHandler } from './application/handler/create-comment.handler';
 import { FindCommentsByBlogIdHandler } from './application/handler/find-comments-by-blog-id.handler';
 import { UpdateCommentAuthorHandler } from './application/handler/update-comment-author.handler';
+import { SyncUserCacheHandler } from './application/handler/sync-user-cache.handler';
 import { SessionGuard } from './adapter/driving/guards/session.guard';
 
 @Module({
@@ -23,11 +25,11 @@ import { SessionGuard } from './adapter/driving/guards/session.guard';
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: process.env.DATABASE_NAME || ':memory:',
-      entities: [CommentEntity],
+      entities: [CommentEntity, CommentUserCacheEntity],
       synchronize: true,
       logging: true,
     }),
-    TypeOrmModule.forFeature([CommentEntity]),
+    TypeOrmModule.forFeature([CommentEntity, CommentUserCacheEntity]),
     CqrsModule.forRoot(),
     ClientsModule.register([
       {
@@ -56,6 +58,7 @@ import { SessionGuard } from './adapter/driving/guards/session.guard';
     CreateCommentHandler,
     FindCommentsByBlogIdHandler,
     UpdateCommentAuthorHandler,
+    SyncUserCacheHandler,
     SessionGuard,
   ],
 })

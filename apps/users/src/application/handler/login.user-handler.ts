@@ -4,21 +4,23 @@ import { SessionRepository, UserRepository } from '../../ports/repository.port';
 import { Session } from '../../domain/entities/session';
 import { ErrorCode } from '@app/_shared/error/error-codes';
 import { AppException } from '@app/_shared/error/app.exception';
+import { PasswordHasher } from '../../ports/password-hasher.port';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
   constructor(
     private userRepository: UserRepository,
     private readonly sessionRepo: SessionRepository,
+    private readonly hasher: PasswordHasher,
   ) {}
 
   async execute(command: LoginCommand) {
     const { password, username } = command;
 
     const user = await this.userRepository.findOneByUsername(username);
-    console.log({ user });
+    const isPasswordValid = user ? await this.hasher.compare(password, user.password) : false;
 
-    if (!user || user.password !== password) {
+    if (!user || !isPasswordValid) {
       throw new AppException(ErrorCode.INVALID_CREDENTIALS);
     }
 
