@@ -7,6 +7,51 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
+function normalizeErrorResponse(payload: any) {
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+
+  const nestedError = payload.error;
+  if (nestedError && typeof nestedError === 'object') {
+    const statusCode =
+      nestedError.statusCode ||
+      nestedError.status ||
+      payload.statusCode ||
+      payload.status ||
+      HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const message =
+      nestedError.message ||
+      payload.message ||
+      nestedError.error ||
+      'Internal server error';
+
+    const result: any = {
+      statusCode: Number(statusCode),
+      message,
+    };
+
+    if (typeof nestedError.error === 'string') {
+      result.error = nestedError.error;
+    } else if (typeof payload.error === 'string') {
+      result.error = payload.error;
+    }
+
+    if (payload.code && !result.error) {
+      result.error = payload.code;
+    }
+
+    if (payload.details) {
+      result.details = payload.details;
+    }
+
+    return result;
+  }
+
+  return payload;
+}
+
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
@@ -21,13 +66,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      message = exception.getResponse();
+      const rawResponse = exception.getResponse();
+      message = normalizeErrorResponse(rawResponse);
     } else {
-      // Check if exception is the error object itself (from RpcException)
       const rpcError = exception?.response || exception;
 
       if (rpcError && typeof rpcError === 'object') {
-        // Extract status code
         const possibleStatus =
           rpcError.statusCode ||
           rpcError.status ||
@@ -38,13 +82,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           status = +possibleStatus;
         }
 
-        // Use the error object as the response body
-        message = rpcError;
-
-        // Ensure statusCode is correct in the body
-        if (message && typeof message === 'object') {
-          message.statusCode = status;
-        }
+        message = normalizeErrorResponse(rpcError);
+        message.statusCode = status;
       } else if (exception && exception.message) {
         message = {
           statusCode: status,

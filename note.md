@@ -212,7 +212,44 @@ async handleBlogCreated(data: { id: number; title: string; userId: number }) {
 }
 ```
 
-### 5. Domain Entity vs Database Entity
+### 5. Error Handling and Delivery Protocol Separation
+
+This project separates error handling based on delivery protocol to keep transport concerns distinct from business logic.
+
+#### How Error Handling Works
+- Domain and application layers throw exceptions when business rules fail.
+- Microservices use `RpcException` for internal RPC transport errors.
+- The Gateway and microservices each have a protocol-specific exception filter:
+  - `apps/gateway/src/filters/global-exception.filter.ts` handles HTTP responses.
+  - `libs/_shared/src/filters/rpc-exception.filter.ts` handles RPC responses within services.
+
+#### RPC Error Handling
+- Services throw `AppException` or `RpcException` to represent domain errors.
+- `GlobalRpcExceptionFilter` converts those exceptions into a structured RPC error payload.
+- The RPC payload includes `statusCode`, `message`, and optionally an `error` code.
+- This payload is sent across the microservice transport layer without binding business logic to HTTP.
+
+#### HTTP Error Handling
+- The Gateway receives RPC errors from downstream services.
+- `GlobalExceptionFilter` inspects the RPC payload and normalizes it for HTTP.
+- It removes nested `error` wrappers and duplicates, then returns a clean response such as:
+  - `statusCode`
+  - `message`
+  - optional `error` or `details`
+
+#### Why This Separation Matters
+- **Protocol independence**: business logic throws meaningful domain exceptions without knowing the transport.
+- **Cleaner responses**: HTTP clients receive simple JSON responses, while RPC clients receive rich structured payloads.
+- **Single source of truth**: transport-specific transformation is handled in filters only, not in handlers or services.
+- **Resilience**: each delivery layer can adapt error formats independently as the system evolves.
+
+#### Example Flow
+1. `CreateBlogHandler` detects a missing user cache and throws `AppException`.
+2. The microservice filter builds a normalized RPC error payload.
+3. The Gateway receives the RPC exception and the HTTP filter converts it to a clean HTTP response.
+4. The client sees a consistent HTTP error object, not a nested RPC wrapper.
+
+### 6. Domain Entity vs Database Entity
 
 #### Domain Entity
 Domain entities represent business concepts and contain business logic. They are pure objects that model the problem domain.
