@@ -26,14 +26,11 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     try {
       const session = Session.create(user.id, {});
-      console.log({ session });
 
       const token = await this.sessionRepo.create(session);
-      console.log({ token });
 
       return { token: token.sessionId };
     } catch (err) {
-      console.error(err);
       throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
