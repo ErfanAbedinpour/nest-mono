@@ -5,12 +5,15 @@ import { BlogEntity } from '../entities/blog.entity';
 import { BlogMapper } from '../mapper/blog.mapper';
 import { BlogRepository } from '../../../../../ports/repository.port';
 import { Blog } from '../../../../../domain/entities/blog';
+import { BlogUserCacheEntity } from '../entities/blog-user-cache.entity';
 
 @Injectable()
 export class TypeOrmBlogRepository implements BlogRepository {
   constructor(
     @InjectRepository(BlogEntity)
     private readonly repository: Repository<BlogEntity>,
+    @InjectRepository(BlogUserCacheEntity)
+    private readonly userCacheRepository: Repository<BlogUserCacheEntity>,
   ) {}
 
   async create(blog: Omit<Blog, 'id' | 'createdAt'>): Promise<Blog> {
@@ -35,5 +38,20 @@ export class TypeOrmBlogRepository implements BlogRepository {
 
   async updateAuthorName(userId: number, authorName: string): Promise<void> {
     await this.repository.update({ userId }, { authorName });
+    await this.upsertUserCache(userId, authorName);
+  }
+
+  async findCachedUser(
+    userId: number,
+  ): Promise<{ userId: number; username: string } | null> {
+    const entity = await this.userCacheRepository.findOne({ where: { userId } });
+    if (!entity) {
+      return null;
+    }
+    return { userId: entity.userId, username: entity.username };
+  }
+
+  async upsertUserCache(userId: number, username: string): Promise<void> {
+    await this.userCacheRepository.save({ userId, username });
   }
 }

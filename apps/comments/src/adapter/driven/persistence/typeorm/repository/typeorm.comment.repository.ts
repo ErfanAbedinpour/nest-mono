@@ -5,12 +5,15 @@ import { CommentEntity } from '../entities/comment.entity';
 import { CommentMapper } from '../mapper/comment.mapper';
 import { CommentRepository } from '../../../../../ports/repository.port';
 import { Comment } from '../../../../../domain/entities/comment';
+import { CommentUserCacheEntity } from '../entities/comment-user-cache.entity';
 
 @Injectable()
 export class TypeOrmCommentRepository implements CommentRepository {
   constructor(
     @InjectRepository(CommentEntity)
     private readonly repository: Repository<CommentEntity>,
+    @InjectRepository(CommentUserCacheEntity)
+    private readonly userCacheRepository: Repository<CommentUserCacheEntity>,
   ) {}
 
   async create(comment: Omit<Comment, 'id' | 'createdAt'>): Promise<Comment> {
@@ -29,5 +32,20 @@ export class TypeOrmCommentRepository implements CommentRepository {
 
   async updateAuthorUsername(userId: number, username: string): Promise<void> {
     await this.repository.update({ userId }, { authorUsername: username });
+    await this.upsertUserCache(userId, username);
+  }
+
+  async findCachedUser(
+    userId: number,
+  ): Promise<{ userId: number; username: string } | null> {
+    const entity = await this.userCacheRepository.findOne({ where: { userId } });
+    if (!entity) {
+      return null;
+    }
+    return { userId: entity.userId, username: entity.username };
+  }
+
+  async upsertUserCache(userId: number, username: string): Promise<void> {
+    await this.userCacheRepository.save({ userId, username });
   }
 }

@@ -7,6 +7,7 @@ import { BlogsService } from './application/services/blogs.service';
 import { BlogRepository } from './ports/repository.port';
 import { TypeOrmBlogRepository } from './adapter/driven/persistence/typeorm/repository/typeorm.blog.repository';
 import { BlogEntity } from './adapter/driven/persistence/typeorm/entities/blog.entity';
+import { BlogUserCacheEntity } from './adapter/driven/persistence/typeorm/entities/blog-user-cache.entity';
 import { CreateBlogHandler } from './application/handler/create-blog.handler';
 import { FindAllBlogsHandler } from './application/handler/find-all-blogs.handler';
 import { FindOneBlogHandler } from './application/handler/find-one-blog.handler';
@@ -14,6 +15,7 @@ import { SessionGuard } from './adapter/driving/guards/session.guard';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { BlogsEventController } from './adapter/driving/controllers/event/blogs-event.controller';
 import { UpdateBlogAuthorHandler } from './application/handler/update-blog-author.handler';
+import { SyncUserCacheHandler } from './application/handler/sync-user-cache.handler';
 
 @Module({
   imports: [
@@ -24,11 +26,11 @@ import { UpdateBlogAuthorHandler } from './application/handler/update-blog-autho
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: process.env.DATABASE_NAME || ':memory:',
-      entities: [BlogEntity],
+      entities: [BlogEntity, BlogUserCacheEntity],
       synchronize: true,
       logging: true,
     }),
-    TypeOrmModule.forFeature([BlogEntity]),
+    TypeOrmModule.forFeature([BlogEntity, BlogUserCacheEntity]),
     CqrsModule.forRoot(),
     ClientsModule.register([
       {
@@ -51,6 +53,7 @@ import { UpdateBlogAuthorHandler } from './application/handler/update-blog-autho
     FindAllBlogsHandler,
     FindOneBlogHandler,
     UpdateBlogAuthorHandler,
+    SyncUserCacheHandler,
     SessionGuard,
   ],
 })
